@@ -1,0 +1,19 @@
+[package]
+name = "rust"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "advent01"
+path = "src/advent01.rs"
+
+[[bin]]
+name = "advent02"
+path = "src/advent02.rs"
+
+[[bin]]
+name = "advent03"
+path = "src/advent03.rs"
+
+[dependencies]
+regex = "1.11.1"
