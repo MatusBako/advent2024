@@ -15,5 +15,9 @@ path = "src/advent02.rs"
 name = "advent03"
 path = "src/advent03.rs"
 
+[[bin]]
+name = "advent04"
+path = "src/advent04.rs"
+
 [dependencies]
 regex = "1.11.1"
