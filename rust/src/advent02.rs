@@ -74,7 +74,7 @@ fn signum(n: i32) -> i32
     }
 }
 
-fn levels_safe_bonus(levels: &Vec<i32>) -> bool
+fn levels_safe_bonus2(levels: &Vec<i32>) -> bool
 {
     // compute 2nd order derivations and detect where it changes
     // not the memory optimal solution, but I thought it would be interesting
@@ -197,6 +197,83 @@ fn levels_safe_bonus(levels: &Vec<i32>) -> bool
 
 }
 
+fn levels_safe_bonus(levels: &Vec<i32>) -> bool
+{
+    // desperate attempt to ditch the 2nd order derivation and use only
+    // 1st order to make it easier I guess? I know, not the best option
+
+    let diff: Vec<i32> = zip(&levels[0..levels.len()-1],&levels[1..])
+        .map(|(x, y): (&i32, &i32)| signum(x - y)).collect();
+
+        
+    let mut indices: HashMap<i32, Vec<i32>> = HashMap::new();
+    
+    let _ = diff.iter()
+        .enumerate()
+        // TODO: maybe rewrite using foreach and force evalution
+        .map(|(idx, value): (usize, &i32)|
+            match value
+        {
+            _ => { 
+                // TODO: why deref?
+                indices.entry(*value)
+                    .and_modify(|v: &mut Vec<i32>| v.push(idx as i32))
+                    .or_insert(vec![idx as i32]); }, 
+        }).collect::<()>();
+
+    return match (indices.get(&-1), indices.get(&0), indices.get(&1))
+    {
+        // rising and falling only
+        (None, None, Some(_)) | (Some(_), None, None) => levels_safe(levels),
+        // (_, Some(v), _) if v.len() > 1 => false,
+        (Some(rising), _, Some(falling)) 
+            if rising.len() > 1 && falling.len() > 1 => false,
+        // equal max 1,
+        (Some(_), None, Some(short))
+        | (Some(short), None, Some(_))
+        | (Some(_), Some(short), None)
+        | (None, Some(short), Some(_))
+            if { short.len() == 1 } => 
+            {
+                // index with only different difference
+                let idx = short[0];
+
+                if idx == 0//diff.len() as i32 - 1
+                {
+                    // 5, 1,2,3 vs  2,1,3,4 vs 2, 5,3,4
+                    // -1,1,1   vs -1,1,1   vs 1,-1,1
+
+                    // 2,4, 8,7 vs 2,4, 8,3
+                    // 1,1,-1   vs 1,1,-1
+
+                    // 2  4 1 5
+                    // 1 -1 1
+
+                    // 7 10 8 10 11
+                    // 1 -1 1  1  1
+
+                    // 2  7 4 6
+                    // 1 -1 1
+
+                    // if 2nd elem is slope is different from the rest
+
+                    // is there an example where I have to remove 2nd but can't 1st?
+
+                    // not sure if to remove first or second element
+
+                }
+
+                // either determine which element to delete or try both
+                let (mut v1, mut v2) = (levels.clone(), levels.clone());
+                v1.remove(idx as usize);
+                v2.remove(idx as usize + 1);
+
+                return levels_safe(&v1) || levels_safe(&v2);
+            },
+        _ => false,
+    };
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>>
 {
     //println!("{arr:?}", arr=&v1[..v1.len()-1]);
@@ -285,6 +362,24 @@ mod tests
     fn eq_mid_falling() 
     {
         assert_eq!(levels_safe_bonus(&vec![5,4,3,3,2,1]), true);
+    }
+
+    #[test]
+    fn up_down_up() 
+    {
+        assert_eq!(levels_safe_bonus(&vec![2,4,1,5]), true);
+    }
+
+    #[test]
+    fn up_down_up2() 
+    {
+        assert_eq!(levels_safe_bonus(&vec![2,7,4,6]), true);
+    }
+
+    #[test]
+    fn down_up_down() 
+    {
+        assert_eq!(levels_safe_bonus(&vec![6,4,7,3]), true);
     }
 
     #[test]
