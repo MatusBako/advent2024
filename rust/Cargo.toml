@@ -27,5 +27,10 @@ path = "src/advent05.rs"
 name = "advent06"
 path = "src/advent06.rs"
 
+[[bin]]
+name = "advent07"
+path = "src/advent07.rs"
+
 [dependencies]
 regex = "1.11.1"
+rayon = "1.10"
